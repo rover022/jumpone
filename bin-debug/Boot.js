@@ -12,13 +12,19 @@ var R = /** @class */ (function () {
     function R() {
     }
     R.URL = "resource/";
+    R.P_PAIHAI = "my_awesome_leaderboard.";
+    R.PREVIDEO_AD = "433380667096621_433969653704389";
+    R.PRELOAD_AD = "433380667096621_433969653704389";
     return R;
 }());
 var MenuState = /** @class */ (function (_super) {
     __extends(MenuState, _super);
-    function MenuState(game) {
-        return _super.call(this) || this;
+    function MenuState() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
+    // constructor(game: Phaser.Game) {
+    //     super()
+    // }
     MenuState.prototype.init = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -28,6 +34,19 @@ var MenuState = /** @class */ (function (_super) {
             this.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
         }
         this.playerArr = [];
+        //
+        console.log(FBInstant.getSupportedAPIs());
+        FBInstant.initializeAsync().then(function () {
+            console.log("getLocale:", FBInstant.getLocale());
+            console.log("getPlatform:", FBInstant.getPlatform());
+            console.log("getSDKVersion", FBInstant.getSDKVersion());
+            console.log("getSupportedAPIs", FBInstant.getSupportedAPIs());
+            console.log("getEntryPointData", FBInstant.getEntryPointData());
+        });
+        setTimeout(function () {
+            FBInstant.setLoadingProgress(100);
+            console.log("facebook 设置初始化完毕 设置进度100%");
+        }, 1000);
     };
     ;
     MenuState.prototype.preload = function () {
@@ -43,6 +62,9 @@ var MenuState = /** @class */ (function (_super) {
     ;
     MenuState.prototype.create = function (game) {
         var _this = this;
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.game.scale.pageAlignHorizontally = true;
+        this.game.scale.pageAlignVertically = true;
         var back = this.game.add.sprite(0, 0, "back");
         back.scale.set(this.game.width / 160, this.game.height / 280);
         // clouds
@@ -64,6 +86,7 @@ var MenuState = /** @class */ (function (_super) {
         box.anchor.set(0.5);
         box.scale.set(this.game.width / 80, 4);
         this.game.add.tween(box).from({ alpha: 0 }, 500, "Linear", true);
+        //设置游戏开始的按钮
         var btn = this.game.add.sprite(this.world.centerX, this.world.centerY, "button", 0);
         btn.anchor.set(0.5);
         this.game.add.tween(btn).from({ alpha: 0 }, 300, "Linear", true).onComplete.add(function (obj) {
@@ -72,12 +95,20 @@ var MenuState = /** @class */ (function (_super) {
                 this.game.state.start("main");
             }, this);
         }, this);
+        //获取游戏的排行榜
+        btn = this.game.add.sprite(this.world.centerX, this.world.centerY + 30, "button", 0);
+        btn.anchor.set(0.5);
+        btn.events.onInputDown.add(function () {
+            // this.setPaiHangBang(30, "{}");
+        });
+        //放3个人物形象放在游戏场景中
         for (var i = 0; i < 3; i++) {
             this.playerArr[i] = this.game.add.sprite(this.world.centerX, 120, "player", i);
             this.playerArr[i].anchor.set(0.5);
             this.playerArr[i].alpha = 0;
         }
         this.playerArr[MenuState.playerStyle].alpha = 1;
+        //设置左右两边的人物。。。
         var btn1 = this.game.add.sprite(this.world.centerX - 100, 120, "button", 4);
         btn1.anchor.set(0.5);
         btn1.inputEnabled = true;
@@ -122,8 +153,10 @@ var MenuState = /** @class */ (function (_super) {
  */
 var MainState = /** @class */ (function (_super) {
     __extends(MainState, _super);
-    function MainState(game) {
-        return _super.call(this) || this;
+    function MainState() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.isEasy = true;
+        return _this;
     }
     MainState.prototype.init = function () {
         this.pArr = [17, 15, 12, 10, 15, 13, 8, 17]; // 各种类型平台宽度，与平台spritesheet各帧对应
@@ -167,8 +200,8 @@ var MainState = /** @class */ (function (_super) {
             y: this.plate1.y - 50,
             alpha: 0
         }, 200, "Linear", true).onComplete.add(function () {
-            _this.plate2 = new PlateSprite(_this.game, _this.world.centerX + _this.lastX, _this.world.centerY - _this.lastY, "plate", 0);
-            //this.plate2 = group.create(this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0);
+            //this.plate2 = new PlateSprite(this.game, this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0)
+            _this.plate2 = group.create(_this.world.centerX + _this.lastX, _this.world.centerY - _this.lastY, "plate", 0);
             _this.plate2.anchor.set(0.5, 0.4);
             _this.plate2.sendToBack();
             _this.game.add.tween(_this.plate2).from({
@@ -188,7 +221,7 @@ var MainState = /** @class */ (function (_super) {
                 //console.log(this.player);
                 //console.log(this.player.x, this.player.y);
                 _this.player = group.create(_this.world.centerX - _this.lastX, _this.world.centerY + _this.lastY);
-                console.log(_this.player);
+                //console.log(this.player);
                 // 身体
                 //this.game.add.sprite(140, 320, "player")
                 //
@@ -215,17 +248,19 @@ var MainState = /** @class */ (function (_super) {
         this.game.add.sprite(75, 10, "icon", 1);
         this.items.txt[1] = this.game.add.text(35, 10, this.items.val[1], { fontSize: 16, fill: "#999" });
         this.items.txt[2] = this.game.add.text(100, 10, this.items.val[2], { fontSize: 16, fill: "#999" });
+        //鼠标输入开始移动标记
         this.game.input.onDown.add(function () {
             if (!_this.moving && !_this.holding) {
                 _this.holding = true;
                 _this.holdTime = _this.game.time.now;
-                if (_this.items.val[2] > 0) {
+                if (_this.items.val[2] > 0 || _this.isEasy) {
                     _this.point.x = _this.player.x;
                     _this.point.y = _this.player.y;
                     _this.point.visible = true;
                 }
             }
         }, this);
+        //鼠标躺起开始跳
         this.game.input.onUp.add(this._jump, this);
     };
     ;
@@ -233,7 +268,7 @@ var MainState = /** @class */ (function (_super) {
         if (this.holding) { // 储力效果，简单的缩短
             var power = Math.min(Math.floor((this.game.time.now - this.holdTime) / 16), 250); // 计算力度，限制数值最大为250
             this.player.scale.y = 1 - (power > 100 ? 0.3 : 0.3 * power / 100);
-            if (this.items.val[2] > 0) {
+            if (this.items.val[2] > 0 || this.isEasy) {
                 var tarX = this.world.centerX - this.lastX + this.lastD * power * 2;
                 var tarY = this.world.centerY + this.lastY - power;
                 this.point.x = tarX;
@@ -364,6 +399,7 @@ var MainState = /** @class */ (function (_super) {
     };
     ;
     MainState.prototype._newPlate = function (sprite, anim) {
+        console.log("_newPlate 随机生成一个距离");
         this.moving = false;
         var newRange = this.game.rnd.integerInRange(10, 50); // 随机生成一个距离
         var newD = this.game.rnd.sign(); // 随机方向（-1:左，1:右）

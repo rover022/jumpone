@@ -11,7 +11,7 @@
 	],
 	"game": [
 		"bin-debug/Boot.js",
-		"bin-debug/FaceBookMenu.js",
+		"bin-debug/FaceBookManger.js",
 		"bin-debug/LoadingUI.js",
 		"bin-debug/Main.js",
 		"bin-debug/Platform.js"

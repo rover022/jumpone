@@ -26,6 +26,7 @@
 <body>
 <div style="margin: auto;width: 100%;height: 100%;" class="egret-player"
      data-entry-class="Main"
+     id="firsttry-game"
      data-orientation="auto"
      data-scale-mode="showAll"
      data-frame-rate="30"
@@ -80,10 +81,18 @@
              * }
              **/
 
-            var game = new Phaser.Game(360, 600, Phaser.CANVAS, 'firsttry-game');
-            game.state.add("menu", menuState, true);
-            game.state.add("main", mainState);
-            game.state.start('menu');
+            var game = new Phaser.Game(
+                360,
+                600,
+                Phaser.AUTO,
+                'firsttry-game',
+                // '',
+                null,
+                false,
+                false
+            );
+            game.state.add("menu", MenuState, true);
+            game.state.add("main", MainState);
 
             console.log("游戏启动。");
         });

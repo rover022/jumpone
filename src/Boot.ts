@@ -1,5 +1,8 @@
 class R {
     public static URL: string = "resource/";
+    public static P_PAIHAI: string = "my_awesome_leaderboard.";
+    static PREVIDEO_AD: string = "433380667096621_433969653704389";
+    static PRELOAD_AD: String = "433380667096621_433969653704389";
 }
 
 
@@ -9,15 +12,30 @@ class MenuState extends Phaser.State {
     public static scoreBest: number = 0;
     public static playerStyle: number = 0;
 
-    constructor(game: Phaser.Game) {
-        super()
-    }
+
+    // constructor(game: Phaser.Game) {
+    //     super()
+    // }
 
     init(...args: any[]) {
         if (!this.game.device.desktop) {
             this.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
         }
         this.playerArr = [];
+        //
+        console.log(FBInstant.getSupportedAPIs());
+        FBInstant.initializeAsync().then(function () {
+            console.log("getLocale:", FBInstant.getLocale());
+            console.log("getPlatform:", FBInstant.getPlatform());
+            console.log("getSDKVersion", FBInstant.getSDKVersion());
+            console.log("getSupportedAPIs", FBInstant.getSupportedAPIs());
+            console.log("getEntryPointData", FBInstant.getEntryPointData());
+        });
+        setTimeout(function () {
+            FBInstant.setLoadingProgress(100);
+            console.log("facebook 设置初始化完毕 设置进度100%");
+        }, 1000);
+
     };
 
     preload(): void {
@@ -32,6 +50,9 @@ class MenuState extends Phaser.State {
     };
 
     create(game: Phaser.Game) {
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.game.scale.pageAlignHorizontally = true;
+        this.game.scale.pageAlignVertically = true;
         let back = this.game.add.sprite(0, 0, "back");
         back.scale.set(this.game.width / 160, this.game.height / 280);
         // clouds
@@ -55,6 +76,7 @@ class MenuState extends Phaser.State {
         box.scale.set(this.game.width / 80, 4);
         this.game.add.tween(box).from({alpha: 0}, 500, "Linear", true);
 
+        //设置游戏开始的按钮
         let btn = this.game.add.sprite(this.world.centerX, this.world.centerY, "button", 0);
         btn.anchor.set(0.5);
         this.game.add.tween(btn).from({alpha: 0}, 300, "Linear", true).onComplete.add(function (obj) {
@@ -64,6 +86,15 @@ class MenuState extends Phaser.State {
             }, this);
         }, this);
 
+
+        //获取游戏的排行榜
+        btn = this.game.add.sprite(this.world.centerX, this.world.centerY + 30, "button", 0);
+        btn.anchor.set(0.5);
+        btn.events.onInputDown.add(() => {
+            // this.setPaiHangBang(30, "{}");
+        });
+
+        //放3个人物形象放在游戏场景中
         for (let i = 0; i < 3; i++) {
             this.playerArr[i] = this.game.add.sprite(this.world.centerX, 120, "player", i);
             this.playerArr[i].anchor.set(0.5);
@@ -71,6 +102,8 @@ class MenuState extends Phaser.State {
         }
         this.playerArr[MenuState.playerStyle].alpha = 1;
 
+
+        //设置左右两边的人物。。。
         let btn1 = this.game.add.sprite(this.world.centerX - 100, 120, "button", 4);
         btn1.anchor.set(0.5);
         btn1.inputEnabled = true;
@@ -107,6 +140,8 @@ class MenuState extends Phaser.State {
             x: this.world.centerX - go * 50
         }, 200, "Linear", true);
     };
+
+
 }
 
 /**
@@ -123,10 +158,11 @@ class MainState extends Phaser.State {
     plate2: PlateSprite;
     plate1: PlateSprite;
     player: GamePlayer;
+    private isEasy: boolean = true;
 
-    constructor(game: Phaser.Game) {
-        super()
-    }
+    // constructor(game: Phaser.Game) {
+    //     super()
+    // }
 
     group: Phaser.Group;
 
@@ -182,8 +218,8 @@ class MainState extends Phaser.State {
             alpha: 0
         }, 200, "Linear", true).onComplete.add(() => {
 
-            this.plate2 = new PlateSprite(this.game, this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0)
-            //this.plate2 = group.create(this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0);
+            //this.plate2 = new PlateSprite(this.game, this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0)
+            this.plate2 = group.create(this.world.centerX + this.lastX, this.world.centerY - this.lastY, "plate", 0);
             this.plate2.anchor.set(0.5, 0.4);
             this.plate2.sendToBack();
             this.game.add.tween(this.plate2).from({
@@ -205,7 +241,7 @@ class MainState extends Phaser.State {
                 //console.log(this.player);
                 //console.log(this.player.x, this.player.y);
                 this.player = group.create(this.world.centerX - this.lastX, this.world.centerY + this.lastY);
-                console.log(this.player);
+                //console.log(this.player);
                 // 身体
                 //this.game.add.sprite(140, 320, "player")
                 //
@@ -236,17 +272,21 @@ class MainState extends Phaser.State {
         this.items.txt[1] = this.game.add.text(35, 10, this.items.val[1], {fontSize: 16, fill: "#999"});
         this.items.txt[2] = this.game.add.text(100, 10, this.items.val[2], {fontSize: 16, fill: "#999"});
 
+        //鼠标输入开始移动标记
         this.game.input.onDown.add(() => {
             if (!this.moving && !this.holding) {
                 this.holding = true;
                 this.holdTime = this.game.time.now;
-                if (this.items.val[2] > 0) {
+                if (this.items.val[2] > 0 || this.isEasy) {
                     this.point.x = this.player.x;
                     this.point.y = this.player.y;
                     this.point.visible = true;
                 }
+
+
             }
         }, this);
+        //鼠标躺起开始跳
         this.game.input.onUp.add(this._jump, this);
     };
 
@@ -254,7 +294,7 @@ class MainState extends Phaser.State {
         if (this.holding) { // 储力效果，简单的缩短
             let power = Math.min(Math.floor((this.game.time.now - this.holdTime) / 16), 250); // 计算力度，限制数值最大为250
             this.player.scale.y = 1 - (power > 100 ? 0.3 : 0.3 * power / 100);
-            if (this.items.val[2] > 0) {
+            if (this.items.val[2] > 0 || this.isEasy) {
                 let tarX = this.world.centerX - this.lastX + this.lastD * power * 2;
                 let tarY = this.world.centerY + this.lastY - power;
                 this.point.x = tarX;
@@ -383,6 +423,7 @@ class MainState extends Phaser.State {
     };
 
     _newPlate(sprite: Phaser.Sprite, anim: Phaser.Animation) {
+        console.log("_newPlate 随机生成一个距离")
         this.moving = false;
         let newRange = this.game.rnd.integerInRange(10, 50); // 随机生成一个距离
         let newD = this.game.rnd.sign();   // 随机方向（-1:左，1:右）
@@ -465,8 +506,6 @@ class GamePlayer extends Phaser.Sprite {
 
     constructor(game: Phaser.Game, x: number, y: number) {
         super(game, x, y);
-
-
     }
 }
 
