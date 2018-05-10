@@ -1,0 +1,35 @@
+{
+  "engineVersion": "5.1.11",
+  "compilerVersion": "5.1.11",
+  "template": {},
+  "target": {
+    "current": "web"
+  },
+  "modules": [
+    {
+      "name": "egret"
+    },
+    {
+      "name": "game"
+    },
+    {
+      "name": "tween"
+    },
+    {
+      "name": "assetsmanager"
+    },
+    {
+      "name": "experimental"
+    },
+    {
+      "name": "egret-facebook"
+    },
+    {
+      "name": "promise"
+    },
+    {
+      "name": "phaser",
+      "path": "./blibs/phaser"
+    }
+  ]
+}
